@@ -15,9 +15,11 @@
 import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -47,11 +49,51 @@ def generate_launch_description():
         ),
 
         DeclareLaunchArgument(
+            name="rviz_path",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('champ_description'), 'rviz', 'urdf_viewer.rviz']
+                ),
+            description="Absolute path to rviz file",
+        ),
+    
+        DeclareLaunchArgument(
             name='hardware_connected', 
             default_value='false',
             description='Set to true if connected to a physical robot'
         ),
 
+        DeclareLaunchArgument(
+            name="description_path",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('champ_description'), 'urdf', 'champ.urdf.xacro']
+                ),
+            description="Absolute path to robot urdf file",
+        ),
+
+        DeclareLaunchArgument(
+            name="joints_map_path",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('champ_config'), 'config/joints', 'joints.yaml']
+                ),
+            description="Absolute path to robot joints config file",
+        ),
+
+        DeclareLaunchArgument(
+            name="links_map_path",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('champ_config'), 'config/links', 'links.yaml']
+                ),
+            description="Absolute path to robot links config file",
+        ),
+
+        DeclareLaunchArgument(
+            name="gait_config_path",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('champ_config'), 'config/gait', 'gait.yaml']
+                ),
+            description="Absolute path to robot gait config file",
+        ),
+    
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(bringup_launch_path),
             launch_arguments={
@@ -62,7 +104,20 @@ def generate_launch_description():
                 "hardware_connected": LaunchConfiguration("hardware_connected"),
                 "publish_foot_contacts": "true",
                 "close_loop_odom": "true",
-                "joint_controller_topic": "joint_group_effort_controller/joint_trajectory"
+                "joint_controller_topic": "joint_group_effort_controller/joint_trajectory",
+                "description_path": LaunchConfiguration("description_path"),
+                "joints_map_path": LaunchConfiguration("joints_map_path"),
+                "links_map_path": LaunchConfiguration("links_map_path"),
+                "gait_config_path": LaunchConfiguration("gait_config_path")
             }.items(),
+        ),
+        
+        Node(
+            package='rviz2',
+            namespace='',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', LaunchConfiguration("rviz_path")],
+            condition=IfCondition(LaunchConfiguration("rviz"))
         )
     ])

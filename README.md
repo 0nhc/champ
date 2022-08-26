@@ -68,15 +68,24 @@ You don't need a physical robot to run the following demos. If you're building a
 
 #### 2.1.1 Run the base driver:
 
-    ros2 launch champ_config bringup.launch 
-    
-    (In another terminal) rviz2 -d src/champ/champ_description/rviz/urdf_viewer.rviz
+```shell
+ros2 launch champ_config bringup.launch.py rviz:=true
+```
+
+If you want to close rviz, set rviz:=false as an argument.
 
 #### 2.1.2 Run the teleop node:
 
-    ros2 launch champ_teleop teleop.launch.py 
+```shell
+ros2 launch champ_teleop teleop.launch.py
+```
 
 If you want to use a [joystick](https://www.logitechg.com/en-hk/products/gamepads/f710-wireless-gamepad.html) add joy:=true as an argument.
+
+```sh
+# or you can also use
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
 
 
 ### 2.2 Gazebo demo:

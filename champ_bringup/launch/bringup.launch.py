@@ -4,6 +4,7 @@ import launch_ros
 import xml.etree.ElementTree as ET
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 from launch import LaunchDescription
 from launch.actions import (
@@ -17,22 +18,10 @@ from launch.event_handlers.on_process_exit import OnProcessExit
 from launch.event_handlers.on_execution_complete import OnExecutionComplete
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 
 
 def generate_launch_description():
-
-    config_pkg_share = launch_ros.substitutions.FindPackageShare(
-        package="champ_config"
-    ).find("champ_config")
-    descr_pkg_share = launch_ros.substitutions.FindPackageShare(
-        package="champ_description"
-    ).find("champ_description")
-    joints_config = os.path.join(config_pkg_share, "config/joints/joints.yaml")
-    gait_config = os.path.join(config_pkg_share, "config/gait/gait.yaml")
-    links_config = os.path.join(config_pkg_share, "config/links/links.yaml")
-    default_model_path = os.path.join(descr_pkg_share, "urdf/champ.urdf.xacro")
-
     declare_use_sim_time = DeclareLaunchArgument(
         "use_sim_time",
         default_value="false",
@@ -41,26 +30,34 @@ def generate_launch_description():
 
     declare_description_path = DeclareLaunchArgument(
         name="description_path",
-        default_value=default_model_path,
+        default_value=PathJoinSubstitution(
+            [FindPackageShare('champ_description'), 'urdf', 'champ.urdf.xacro']
+            ),
         description="Absolute path to robot urdf file",
     )
 
     declare_joints_map_path = DeclareLaunchArgument(
         name="joints_map_path",
-        default_value='',
-        description="Absolute path to robot urdf file",
+        default_value=PathJoinSubstitution(
+            [FindPackageShare('champ_config'), 'config/joints', 'joints.yaml']
+            ),
+        description="Absolute path to robot joints config file",
     )
 
     declare_links_map_path = DeclareLaunchArgument(
         name="links_map_path",
-        default_value='',
-        description="Absolute path to robot urdf file",
+        default_value=PathJoinSubstitution(
+            [FindPackageShare('champ_config'), 'config/links', 'links.yaml']
+            ),
+        description="Absolute path to robot links config file",
     )
 
     declare_gait_config_path = DeclareLaunchArgument(
         name="gait_config_path",
-        default_value='',
-        description="Absolute path to robot urdf file",
+        default_value=PathJoinSubstitution(
+            [FindPackageShare('champ_config'), 'config/gait', 'gait.yaml']
+            ),
+        description="Absolute path to robot gait config file",
     )
 
     declare_orientation_from_imu = DeclareLaunchArgument(
